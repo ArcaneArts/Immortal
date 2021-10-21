@@ -8,22 +8,13 @@ contract Immortal {
     // Fired when data is removed
     event removeEvent(address indexed from, string key);
 
-    // The owner of this smart contract
-    address owner;
-
     // Maps users to their data (string => string)
     mapping (address => mapping(string => string)) data;
-
-    // Upon creation, sets the creator
-    constructor()
-    {
-        owner = msg.sender;
-    }
 
     // Allows any user to write to their data
     function put(string memory key, string memory value) public payable {
         data[msg.sender][key] = value;
-        emit writeEvent(msg.sender, key, value);
+        emit putEvent(msg.sender, key, value);
     }
 
     // Allows any user to delete a key from their data
