@@ -2,29 +2,37 @@
 pragma solidity >=0.4.16 <0.9.0;
 
 contract Immortal {
-    // Fired when data is put
     event putEvent(address indexed from, string key, string value);
-
-    // Fired when data is removed
     event removeEvent(address indexed from, string key);
 
-    // Maps users to their data (string => string)
     mapping (address => mapping(string => string)) data;
+    address owner;
+    uint public fee = 0;
 
-    // Allows any user to write to their data
-    function put(string memory key, string memory value) public payable {
+    constructor() public { owner = msg.sender;}
+
+    modifier paid() { require(msg.value >= fee, "Value must contain at least the fee in WEI"); _;}
+    modifier administrative() {require(msg.sender == owner, "You are not the owner. You cannot do this.");_;}
+
+    function adminSetFeeWei(uint newFeeWei) public payable administrative {
+        fee = newFeeWei;
+    }
+
+    function adminWithdraw() public administrative {
+        msg.sender.transfer(address(this).balance);
+    }
+
+    function put(string memory key, string memory value) public payable paid {
         data[msg.sender][key] = value;
         emit putEvent(msg.sender, key, value);
     }
 
-    // Allows any user to delete a key from their data
-    function remove(string memory key) public payable {
+    function remove(string memory key) public payable paid {
         delete data[msg.sender][key];
         emit removeEvent(msg.sender, key);
     }
 
-    // Gets the data at a given user/key
-    function getData(address me, string memory key) public view returns (string memory) {
-        return data[me][key];
+    function get(string memory key) public view returns (string memory) {
+        return data[msg.sender][key];
     }
 }
